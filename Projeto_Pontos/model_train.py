@@ -9,6 +9,7 @@ from sklearn import tree, linear_model, ensemble, naive_bayes
 
 from feature_engine import imputation
 
+import scikitplot as skplt
 # %%
 df = pd.read_csv("../data/dados_pontos.csv", sep=";")
 df
@@ -51,7 +52,10 @@ model
 
 # %%
 # Criando meu pipeline para aplicar isso nos novos dados
-meu_pipeline = pipeline.Pipeline([("input_max", imputacao_max), ("model", model)])
+meu_pipeline = pipeline.Pipeline([
+    ("input_max", imputacao_max), 
+    ("model", model)
+    ])
 meu_pipeline
 
 # %%
@@ -103,7 +107,7 @@ grid = model_selection.GridSearchCV(meu_pipeline,
                                     param_grid = params,
                                     n_jobs = -1, # Quantos processadores da maquina vc quer que utilize, -1 = todos
                                     scoring = "roc_auc")
-# Curva roc é melhor pois ela da a probabilidade
+# Curva roc é melhor métrica pois ela da a probabilidade
 
 grid.fit(X_train, y_train)
 
@@ -190,4 +194,21 @@ auc_test = metrics.roc_auc_score(y_test, y_test_proba)
 print('AUC base train: ', auc_train)
 print('AUC base test: ', auc_test)
 
+# %%
+import matplotlib.pyplot as plt
+plt.figure(dpi = 600)
+
+# Arrumando para dar certo o gráfico
+y_test_proba = meu_pipeline.predict_proba(X_test)
+
+skplt.metrics.plot_roc(y_test, y_test_proba)
+plt.show()
+# %%
+# Fazer tipo um gráfico de recall
+skplt.metrics.plot_cumulative_gain(y_test, y_test_proba)
+plt.show()
+# Quanto mais rapido minha classe 1 cresce melhor é meu modelo de captura
+# %%
+skplt.metrics.plot_lift_curve(y_test, y_test_proba)
+plt.show()
 # %%
